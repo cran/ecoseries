@@ -8,7 +8,7 @@
 #' @export
 #' @import RCurl xlsx
 #' @examples
-#' series_bacen(1242,2134)
+#' bacen = series_bacen(x=c(2465))
 
 series_bacen <- function(x, from = "", to = "", save = ""){
     
@@ -34,20 +34,28 @@ series_bacen <- function(x, from = "", to = "", save = ""){
     serie = mapply(paste0, "serie_", inputs, USE.NAMES = FALSE)
     
     
-    for (i in len){ assign(serie[i],
-                           RCurl::getURL(paste0('http://api.bcb.gov.br/dados/serie/bcdata.sgs.',
-                                                inputs[i], 
-                                                '/dados?formato=csv&dataInicial=', data_init, '&dataFinal=',
-                                                data_end),
-                                         ssl.verifyhost=FALSE, ssl.verifypeer=FALSE))}
+    for (i in len){ assign(serie[i], 
+                           RCurl::getURL(
+                               paste0('http://api.bcb.gov.br/dados/serie/bcdata.sgs.',
+                                      inputs[i],
+                                      '/dados?formato=csv&dataInicial=', 
+                                      data_init, '&dataFinal=',
+                                      data_end), 
+                               ssl.verifyhost=FALSE, ssl.verifypeer=FALSE))}
+    
+    
     
     
     for (i in len){
-        texto = utils::read.csv(textConnection(eval(as.symbol(
-            serie[i]))), header=T)
-        texto$data = gsub(' .*$','', eval(texto$data))
-        assign(serie[i], texto)
-        
+        tryCatch({
+            texto = utils::read.csv(textConnection(eval(as.symbol(
+                serie[i]))), header=T) 
+            texto$data = gsub(' .*$','', eval(texto$data))
+            assign(serie[i], texto)},
+        error=function(cond) {
+            message(paste(serie[i], "could not be downloaded due to BCB server instability."))
+        }
+        )
     }
     
     rm(texto)
