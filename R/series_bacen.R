@@ -6,9 +6,10 @@
 #' Defaults to not saving.
 #' @keywords bacen
 #' @export
-#' @import RCurl xlsx
-#' @examples
-#' bacen = series_bacen(x=c(2465))
+#' @import RCurl 
+#' @importFrom readr read_csv write_csv
+#' @examples 
+#' bacen = series_bacen(x=c(2465, 1242))
 
 series_bacen <- function(x, from = "", to = "", save = ""){
     
@@ -34,39 +35,59 @@ series_bacen <- function(x, from = "", to = "", save = ""){
     serie = mapply(paste0, "serie_", inputs, USE.NAMES = FALSE)
     
     
-    for (i in len){ assign(serie[i], 
-                           RCurl::getURL(
-                               paste0('http://api.bcb.gov.br/dados/serie/bcdata.sgs.',
-                                      inputs[i],
-                                      '/dados?formato=csv&dataInicial=', 
-                                      data_init, '&dataFinal=',
-                                      data_end), 
-                               ssl.verifyhost=FALSE, ssl.verifypeer=FALSE))}
-    
-    
-    
-    
-    for (i in len){
-        tryCatch({
-            texto = utils::read.csv(textConnection(eval(as.symbol(
-                serie[i]))), header=T) 
-            texto$data = gsub(' .*$','', eval(texto$data))
-            assign(serie[i], texto)},
-        error=function(cond) {
-            message(paste(serie[i], "could not be downloaded due to BCB server instability."))
-        }
-        )
+     for (i in len){
+        result = tryCatch({
+            
+        RCurl::getURL(paste0('http://api.bcb.gov.br/dados/serie/bcdata.sgs.',
+                              inputs[i], 
+                             '/dados?formato=csv&dataInicial=', data_init, '&dataFinal=',
+                              data_end),
+                              ssl.verifyhost=FALSE, ssl.verifypeer=FALSE, 
+                              .opts = list(timeout = 1, maxredirs = 2))
+        },
+        error = function(e) {
+            return(RCurl::getURL(paste0('http://api.bcb.gov.br/dados/serie/bcdata.sgs.',
+                                        inputs[i], 
+                                        '/dados?formato=csv&dataInicial=', data_init,
+                                        '&dataFinal=',
+                                        data_end),
+                                        ssl.verifyhost=FALSE, ssl.verifypeer=FALSE))
+            
+        })
+        
+        assign(serie[i], result) 
     }
     
+    rm(result)
+    
+    
+    for (i in len) {
+        tryCatch({
+            texto = readr::read_csv(eval(as.symbol(serie[i])), 
+                                    col_names = T)
+            texto$data = gsub(" .*$", "", eval(texto$data))
+            assign(serie[i], texto)
+        }, error = function(cond) {
+            message(paste(serie[i], 
+                          "could not be downloaded due to BCB server instability."))
+        })
+    }
     rm(texto)
+    
     
     if (save != ""){
         if (save == "csv"){
-            for(i in len) {utils::write.csv(eval(as.symbol(serie[i])), file = paste0(serie[i], ".csv"))}
-        } else if (save == "xls" | save == "xlsx") {
-            for(i in len) {write.xlsx(eval(as.symbol(serie[i])), file = paste0(serie[i], ".xlsx"), 
+            for(i in len) {readr::write_csv(eval(as.symbol(serie[i])), 
+                                            path = paste0(serie[i], ".csv"))}
+        } 
+    
+    if (requireNamespace("xlsx", quietly = TRUE)) {        
+        if (save == "xls" | save == "xlsx") {
+            for(i in len) {xlsx::write.xlsx(eval(as.symbol(serie[i])), 
+                                      file = paste0(serie[i], ".xlsx"), 
                                       row.names = FALSE)}} else{ 
                                           stop("save argument must be 'csv' or 'xlsx' ")}
+        }
     }
     
     lista = list()

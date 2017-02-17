@@ -7,6 +7,7 @@
 #' @keywords ipea ipeadata
 #' @export
 #' @import rvest xml2 stats utils
+#' @importFrom readr read_csv write_csv
 #' @examples
 #' ipea=series_ipeadata(394221910, periodicity = c("Y")) 
 
@@ -28,11 +29,17 @@ series_ipeadata <- function(arg1, ..., periodicity = c("Y","D"), save = ""){
     
     if (save != ""){
         if (save == "csv"){
-            for(i in len) {utils::write.csv(eval(as.symbol(serie[i])), file = paste0(serie[i], ".csv"))}
-        } else if (save == "xls" | save == "xlsx") {
-            for(i in len) {write.xlsx(eval(as.symbol(serie[i])), file = paste0(serie[i], ".xlsx"), 
-                                      row.names = FALSE)}} else{ 
-                                          stop("save argument must be 'csv' or 'xlsx' ")}
+            for(i in len) {readr::write_csv(eval(as.symbol(serie[i])), 
+                                            file = paste0(serie[i], ".csv"))}
+        } 
+
+        if (requireNamespace("xlsx", quietly = TRUE)) {                    
+            if (save == "xls" | save == "xlsx") {
+                for(i in len) {xlsx::write.xlsx(eval(as.symbol(serie[i])), 
+                                file = paste0(serie[i], ".xlsx"), 
+                                row.names = FALSE)}} else{
+                                stop("save argument must be 'csv' or 'xlsx' ")}
+        }
     }
     
     lista = list()
