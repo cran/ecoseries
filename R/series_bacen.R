@@ -9,7 +9,7 @@
 #' @import RCurl 
 #' @importFrom readr read_csv write_csv
 #' @examples 
-#' bacen = series_bacen(x=c(2465, 1242))
+#' bacen = series_bacen(x=c(1242))
 
 series_bacen <- function(x, from = "", to = "", save = ""){
     
@@ -63,7 +63,7 @@ series_bacen <- function(x, from = "", to = "", save = ""){
     
     for (i in len) {
         tryCatch({
-            texto = readr::read_csv(eval(as.symbol(serie[i])), 
+            texto = readr::read_csv2(eval(as.symbol(serie[i])), 
                                     col_names = T)
             texto$data = gsub(" .*$", "", eval(texto$data))
             assign(serie[i], texto)
