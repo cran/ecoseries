@@ -2,15 +2,20 @@
 #' 
 #' The different parameters define the table and its dimensions (periods, variables, territorial units and classification) to be consulted. The parameters that define the sections may vary from table to table. Henceforth, the Sidra function ranges between 2 mandatory arguments - x (the series number) and territory (the geographic scope) to 6 arguments, where you can input the time window wanted, the variables and the sections. You can only choose one variable per series per request, but multiple sections within the variable.
 #' @param x Sidra series number.
-#' @param from A string or character vector specifying where the series shall start. Defaults to 1980.
-#' @param to A string or character vector specifying where the series shall end. Defaults to current year.
+#' @param from A string or character vector specifying where the series shall start. Defaults
+#' to 1980.
+#' @param to A string or character vector specifying where the series shall end. Defaults to
+#'  current year.
 #' @param territory Specifies the desired territorial levels.
 #' @param header Logical. Either TRUE or FALSE.
 #' @param save A string specifying if data should be saved in csv or xlsx format. 
 #' Defaults to not saving.
-#' @param variable An integer describing what variable characteristics are to be returned. Defaults to all available.
+#' @param variable An integer describing what variable characteristics are to be returned. 
+#' Defaults to all available.
 #' @param cl A vector containing the classification codes in a vector
-#' @param sections A vector or a list of vectors if there are two or more classification codes containing the desired tables from the classification.
+#' @param sections A vector or a list of vectors if there are two or more classification
+#' codes containing the desired tables from the classification.
+#' @param formating Logical. Data is returned in a tibble with dates and values parsed. 
 #' @keywords sidra
 #' @export
 #' @import RCurl rjson tibble
@@ -19,13 +24,18 @@
 #' # sidra=series_sidra(x = c(3653), from = c("200201"), 
 #' # to = c("201512"), territory = "brazil", 
 #' # variable = 3135, sections = c(129316,129330),cl = 544)
+#' # sidra=series_sidra(x = c(3653), from = c("200201"), 
+#' # to = c("201512"), territory = "brazil",  variable = 3135, 
+#' # sections = "all", cl = 544)
+#' # sidra=series_sidra(x = c(1618), from = c("201701"), to = c("201701"), 
+#' # territory = "brazil",
+#' # variable = 109, sections=list(c(39427), c(39437,39441)), cl = c(49, 48))
 
 
 
 
 
-
-series_sidra <- function(x, from = NULL, to = NULL, territory = c(n1 = "brazil", n2 = "region", n3 = "state"), header = TRUE, save = "", variable = "allxp", cl = NULL,sections = NULL){
+series_sidra <- function(x, from = NULL, to = NULL, territory = c(n1 = "brazil", n2 = "region", n3 = "state"), header = TRUE, save = "", variable = "allxp", cl = NULL,sections = NULL, formating = FALSE){
     
     x = as.character(x)
     
@@ -140,7 +150,69 @@ series_sidra <- function(x, from = NULL, to = NULL, territory = c(n1 = "brazil",
             t1 = paste("tabela", x, sep="_")
             tabela = rjson::fromJSON(tabela)
             tabela = tibble::as_data_frame(do.call("rbind", tabela))
-            if (header == "y"){
+            
+            
+            if (! formating == FALSE){
+                
+                tabela2 = tabela
+                colnames(tabela) = unlist(tabela[1,])
+                tabela = tabela[-1,]
+                id = which(colnames(tabela)=="V" | colnames(tabela)=="Valor")
+                
+                
+                id2 = which(colnames(tabela2)== "D4N")
+                id3 = which(colnames(tabela) == "M\u00EAs" | colnames(tabela) == "Ano" |
+                            colnames(tabela) == "Ano (C\u00F3digo)" | 
+                                colnames(tabela) == "M\u00EAs (C\u00F3digo)")
+                
+                if (colnames(tabela[,id3]) == "Ano (C\u00F3digo)"){
+                    colnames(tabela[,id3]) = "Ano"}
+                if (colnames(tabela[,id3]) == "M\u00EAs (C\u00F3digo)") {
+                    colnames(tabela[,id3]) = "M\u00EAs"}               
+                    
+                    
+                tabela = tibble::as_data_frame(cbind(tabela[,id3], 
+                                                     tabela[,id2], 
+                                                     tabela[,id]))
+                
+                
+                tryCatch({
+                tabela$mes <- sapply(tabela["M\u00EAs"], 
+                                     FUN = function(x){substr(x,1,(nchar(x)-5))}) 
+                tabela$ano <- sapply(tabela["M\u00EAs"], 
+                                     FUN = function(x){substr(x,(nchar(x)-3), nchar(x))}) 
+                
+                
+                tabela$mes[tabela$mes == "janeiro"] <- "01"
+                tabela$mes[tabela$mes == "fevereiro"] <- "02"
+                tabela$mes[tabela$mes == "mar\u00E7o"] <- "03"
+                tabela$mes[tabela$mes == "abril"] <- "04"
+                tabela$mes[tabela$mes == "maio"] <- "05"
+                tabela$mes[tabela$mes == "junho"] <- "06"
+                tabela$mes[tabela$mes == "julho"] <- "07"
+                tabela$mes[tabela$mes == "agosto"] <- "08"
+                tabela$mes[tabela$mes == "setembro"] <- "09"
+                tabela$mes[tabela$mes == "outubro"] <- "10"
+                tabela$mes[tabela$mes == "novembro"] <- "11"
+                tabela$mes[tabela$mes == "dezembro"] <- "12"
+                
+                tabela$mes_ano <- base::paste0(tabela$ano, "-",tabela$mes, "-01")
+                tabela$mes_ano <- base::as.Date(tabela$mes_ano)
+                tabela <- tabela[,c(6,2,3)]
+                colnames(tabela)[1] <- "Data"
+                
+                }, error = function(e){
+                    
+                    if("Ano" %in% colnames(tabela)){ 
+                    tabela$Ano <- base::paste0(tabela$Ano, "-01-01")
+                    tabela$Ano <- base::as.Date(tabela$Ano)
+                    }
+                    
+                })
+                
+                rm(tabela2)
+                
+            } else if (header == "y"){
                 
                 colnames(tabela) = unlist(tabela[1,])
                 tabela = tabela[-1,]
@@ -149,14 +221,11 @@ series_sidra <- function(x, from = NULL, to = NULL, territory = c(n1 = "brazil",
             #Transformando a coluna V em valor
             
             valor = NULL
-            
             id = which(colnames(tabela)=="V" | colnames(tabela)=="Valor")
-            
-            #tabela2 = tabela
-            #tabela2[tabela2[,id] ==  "..",id] <- NA
-            #tabela2[,id] <- as.numeric(tabela2[,id])
             tabela[,id] = suppressWarnings(ifelse(unlist(tabela[,id])!="..", 
                                                   as.numeric(unlist(tabela[,id])),NA))
+            
+            
         }
         
         assign(serie[i],tabela)
