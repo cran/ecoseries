@@ -4,7 +4,7 @@
 \alias{series_ipeadata}
 \title{A function to extract IPEA series using their API}
 \usage{
-series_ipeadata(arg1, ..., periodicity = c("Y", "D"), save = "")
+series_ipeadata(arg1, ..., periodicity = c("Y", "D", "M", "Q"), save = "")
 }
 \arguments{
 \item{arg1}{ipea series number.}

@@ -1,11 +1,11 @@
-649de02d8a7b6aabfb5e829656969617 *DESCRIPTION
+8ab739f415bacf05a6d4eee9c8be61c7 *DESCRIPTION
 b842aa2737769ce1c97fa0494b8fe355 *NAMESPACE
-bcad0f0044939a2e890705fd5afb65a8 *R/aux_ipeadata.R
+e3e50ddafb3f5f57cb5ad35219432659 *R/aux_ipeadata.R
 0e598c9c6a4578763f3c4b9cb1b1c451 *R/ecoseries.R
 20cf1562d83d94fcd72fc0335de38663 *R/series_bacen.R
-e49fcf937db72c8ba17e0c533ff9be43 *R/series_ipeadata.R
+45c95dee4c5bbc9c51a2b5df397a4698 *R/series_ipeadata.R
 680460dc8695eaedc23ef550993fbef9 *R/series_sidra.R
 fc8aa3cd4f9cf3c1795db89e491f7791 *man/ecoseries.Rd
 6018734b85a9f90acddbf54b4ec6d084 *man/series_bacen.Rd
-e8d25ec52b524f67c7e52f96cc839b5d *man/series_ipeadata.Rd
+acc2782607bcd948ad482017d7c97277 *man/series_ipeadata.Rd
 13a2bae99e24d19c0f9dfa02a2efce11 *man/series_sidra.Rd

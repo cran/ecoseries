@@ -1,8 +1,8 @@
 Package: ecoseries
 Title: An R Interface to Brazilian Central Bank and Sidra APIs and the
         IPEA Data
-Version: 0.1.4
-Date: 2017-08-09
+Version: 0.1.5
+Date: 2017-09-27
 Authors@R: c(person("Fernando", "Teixeira", email = "fernando.teixeira@fgv.br", role = c("aut", "cre")),
 			 person("Jonatha", "Azevedo", email = "jonatha.azevedo@fgv.br", role = "aut"))
 Maintainer: Fernando Teixeira <fernando.teixeira@fgv.br>
@@ -16,8 +16,8 @@ RoxygenNote: 6.0.1
 Imports: RCurl, rjson, rvest, stats, xml2, magrittr, readr, tibble, zoo
 Suggests: xlsx
 NeedsCompilation: no
-Packaged: 2017-08-11 14:27:32 UTC; fernando.teixeira
+Packaged: 2017-09-27 18:28:07 UTC; fernando.teixeira
 Author: Fernando Teixeira [aut, cre],
   Jonatha Azevedo [aut]
 Repository: CRAN
-Date/Publication: 2017-08-11 14:44:32 UTC
+Date/Publication: 2017-09-27 18:39:25 UTC
